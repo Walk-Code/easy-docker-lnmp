@@ -1,0 +1,104 @@
+version: '3'
+
+networks: 
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+
+volumes: 
+  mysql: 
+    driver: local
+  mongo:
+    driver: local
+  redis:
+    driver: local
+
+services: 
+  php:
+    build: ./php
+    volumes: 
+      - ${WORKER_DIR}:/var/www
+    ports:
+      - 9501:9501
+    depends_on:
+      - mysql
+      - redis
+      - mongo
+      - rabbitmq
+    networks:
+      - backend
+
+  nginx:
+    build: ./nginx
+    volumes:  
+      - ${WORKER_DIR}:/var/www
+      - ${NGINX_DIR}/logs/nginx:/var/log/nginx
+      - ${NGINX_DIR}/conf.d:/etc/nginx/conf.d
+    ports: 
+      - 8000:80
+      - 8085:85
+      - 8881:81
+      - 8888:88
+      - 8089:89
+      - 9797:97
+      - 9898:98
+      - 9191:91
+      - 9999:99
+    depends_on:
+      - php
+    networks: 
+      - frontend
+      - backend
+
+  mysql:
+    build: ./mysql
+    cap_add: 
+      - SYS_PTRACE
+    command: --default-authentication-plugin=mysql_native_password --innodb-use-native-aio=0
+    environment: 
+      - MYSQL_ROOT_PASSWORD=root
+    volumes: 
+      - ${DATA_PATH}/mysql:/var/lib/mysql
+    ports: 
+      - 3310:3306
+    networks: 
+      - backend
+  
+  mongo:
+    build: ./mongo
+    environment: 
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+    ports: 
+      - 27010:27017
+    #volumes: 
+     # - ${DATA_PATH}/mongo:/data/db
+    networks: 
+      - backend
+  
+  redis:
+    build: ./redis
+    volumes: 
+      - ${DATA_PATH}/redis:/data
+    #entrypoint: redis-server --appendonly yes --requirepass hangqun
+    ports: 
+      - 6310:6379
+    networks: 
+      - backend
+
+  rabbitmq:
+    build: ./rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+      - 15671:15671
+    hostname: rabbitmq
+    privileged: true
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - ${DATA_PATH}/rabbitmq:/var/lib/rabbitmq/mnesia/rabbit@rabhost
+    networks:
+      - backend
