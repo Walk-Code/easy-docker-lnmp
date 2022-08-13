@@ -9,11 +9,11 @@ RUN cat /etc/apt/sources.list && \
     rm -Rf /var/lib/apt/lists/* && \
     apt-get update && apt-get install -y cron && apt-get install -y vim git supervisor libpq-dev libmemcached-dev cmake
 # composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin/ ----filename=composer && \
-    mv /usr/local/bin/composer.phar /usr/local/bin/composer && \
+#RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin/ ----filename=composer && \
+#    mv /usr/local/bin/composer.phar /usr/local/bin/composer && \
     # 国内镜像加速
-    composer self-update --1 && \
-    composer config -g repo.packagist composer https://packagist.phpcomposer.com
+#    composer self-update --1 && \
+#    composer config -g repo.packagist composer https://packagist.phpcomposer.com
     #composer global require hirak/prestissimo
 
 #USER www-data
